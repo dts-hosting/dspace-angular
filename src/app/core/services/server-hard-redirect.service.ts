@@ -41,43 +41,8 @@ export class ServerHardRedirectService extends HardRedirectService {
    *    optional HTTP status code to use for redirect (default = 302, which is a temporary redirect)
    */
   redirect(url: string, statusCode?: number) {
-    if (url === this.req.url) {
-      return;
-    }
-
-    let redirectUrl = url;
-    // If redirect url contains SSR base url then replace with public base url
-    if (isNotEmpty(this.appConfig.rest.ssrBaseUrl) && this.appConfig.rest.baseUrl !== this.appConfig.rest.ssrBaseUrl) {
-      redirectUrl = url.replace(this.appConfig.rest.ssrBaseUrl, this.appConfig.rest.baseUrl);
-    }
-
-    if (this.res.finished) {
-      const req: any = this.req;
-      req._r_count = (req._r_count || 0) + 1;
-
-      console.warn('Attempted to redirect on a finished response. From',
-        this.req.url, 'to', redirectUrl);
-
-      if (req._r_count > 10) {
-        console.error('Detected a redirection loop. killing the nodejs process');
-        process.exit(1);
-      }
-    } else {
-      // attempt to use passed in statusCode or the already set status (in request)
-      let status = statusCode || this.res.statusCode || 0;
-      if (status < 300 || status >= 400) {
-        // temporary redirect
-        status = 302;
-      }
-
-      console.info(`Redirecting from ${this.req.url} to ${redirectUrl} with ${status}`);
-
-      this.res.redirect(status, redirectUrl);
-      this.res.end();
-      // I haven't found a way to correctly stop Angular rendering.
-      // So we just let it end its work, though we have already closed
-      // the response.
-    }
+      // NO-OP: Do not perform actual HTTP redirect on the server
+      console.log(`[SSR] Skipping hard redirect to: ${url}`);
   }
 
   /**

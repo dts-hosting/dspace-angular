@@ -6,9 +6,11 @@
  * http://www.dspace.org/license/
  */
 /* eslint-disable max-classes-per-file */
+import { isPlatformBrowser } from '@angular/common';
 import {
   Inject,
   Injectable,
+  PLATFORM_ID,
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -79,6 +81,7 @@ export class DsoRedirectService {
 
   constructor(
     @Inject(APP_CONFIG) protected appConfig: AppConfig,
+    @Inject(PLATFORM_ID) private platformId: object,
     protected requestService: RequestService,
     protected rdbService: RemoteDataBuildService,
     protected objectCache: ObjectCacheService,
@@ -105,9 +108,10 @@ export class DsoRedirectService {
           const dso = response.payload;
           if (hasValue(dso.uuid)) {
             const newRoute = getDSORoute(dso);
-            if (hasValue(newRoute)) {
-              // Use a "301 Moved Permanently" redirect for SEO purposes
-              this.hardRedirectService.redirect(this.appConfig.ui.nameSpace.replace(/\/$/, '') + newRoute, 301);
+            if (hasValue(newRoute) && isPlatformBrowser(this.platformId)) {
+              // Only redirect in the browser
+              const finalUrl = this.appConfig.ui.nameSpace.replace(/\/$/, '') + newRoute;
+              this.hardRedirectService.redirect(finalUrl, 301);
             }
           }
         }

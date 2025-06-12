@@ -57,6 +57,7 @@ import {
   RESPONSE,
 } from './src/express.tokens';
 import { SsrExcludePatterns } from "./src/config/ssr-config.interface";
+import { SSRRedirectError } from 'src/app/core/errors/ssr-redirect-error';
 
 /*
  * Set path for the browser application's dist folder
@@ -289,6 +290,13 @@ function serverSideRender(req, res, next, sendToUser: boolean = true) {
       }
     })
     .catch((err) => {
+      if (err instanceof SSRRedirectError) {
+        // SSR_REDIRECT: redirect triggered, finalize response
+        if (!res.finished) {
+          res.end();
+        }
+        return;
+      }
       if (hasValue(err) && err.code === 'ERR_HTTP_HEADERS_SENT') {
         // When this error occurs we can't fall back to CSR because the response has already been
         // sent. These errors occur for various reasons in universal, not all of which are in our

@@ -288,7 +288,12 @@ function serverSideRender(req, res, next, sendToUser: boolean = true) {
     .catch((err) => {
       if (err instanceof SSRRedirectError) {
         // SSR_REDIRECT: redirect triggered, finalize response
+        console.warn('SSRRedirectError thrown');
+        if (hasValue(err)) {
+          console.warn('Error details : ', err);
+        }
         if (!res.finished) {
+          console.warn('Response not finished; forcing end');
           res.end();
         }
         return;
